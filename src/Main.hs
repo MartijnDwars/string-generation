@@ -1,3 +1,5 @@
+{-# LANGUAGE PostfixOperators #-}
+
 module Main where
 
 import Data.List hiding (insert)
@@ -66,9 +68,26 @@ nth 0 (x:_) = Just x
 nth n (_:xs) | n > 0 = nth (n-1) xs
 nth _ [] = Nothing
 
+flatMap :: (t -> [a]) -> [t] -> [a]
+flatMap _ [] = []
+flatMap f (x:xs) = f x ++ flatMap f xs
+
+prependAll :: String -> [String] -> [String]
+prependAll word = map (word ++)
+
+(^*) :: [String] -> [String]
+(^*) base = "" : (base^+)
+
+(^+) :: [String] -> [String]
+(^+) base = base ++ flatMap (flip prependAll base) (base^+)
+
 ntA = "a" : map (++"a") ntA
-ntB = "b" : map (++"b") ntB
-ntS = ntA +++ ntB
+ntB = "b" : map (++"bb") ntB
+
+ntC :: [Symbols]
+ntC = "c" : map (++"c") ntC
+
+ntS = ((ntA +++ ntB)^*)
 
 main :: IO ()
 main = mapM_ print (take 100 ntS)
