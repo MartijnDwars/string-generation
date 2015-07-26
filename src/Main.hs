@@ -31,30 +31,30 @@ cmpVal (v1, _, _) (v2, _, _) = cmpSymLen v1 v2
 a +++ b = prod cmpSymLen a b
 
 prod :: (Symbols -> Symbols -> Ordering) -> [Symbols] -> [Symbols] -> [Symbols]
-prod cmpSym l1 l2 = getfrontier initfrontier
+prod cmpSym l1 l2 = getfrontier initfrontier l1 l2
   where initfrontier :: Frontier
         initfrontier = [(initval, 0, 0)]
         initval = (head l1) ++ (head l2)
 
-getfrontier :: Frontier -> [Symbols]
-getfrontier [] = []
-getfrontier frontier = a: getfrontier frontier'''
+getfrontier :: Frontier -> [Symbols] -> [Symbols] -> [Symbols]
+getfrontier []       l1 l2 = []
+getfrontier frontier l1 l2 = a: getfrontier frontier''' l1 l2
   where ((a,r,c) : frontier') = frontier
-        frontier''            = addrow frontier'  (r+1) c
-        frontier'''           = addcol frontier'' r     (c+1)
+        frontier''            = addrow frontier'  (r+1) c     l1 l2
+        frontier'''           = addcol frontier'' r     (c+1) l1 l2
 
-addrow :: Frontier -> Int -> Int -> Frontier
-addrow fs r c = if r `elem` rs then fs
-                else insert r c fs
+addrow :: Frontier -> Int -> Int -> [Symbols] -> [Symbols] -> Frontier
+addrow fs r c l1 l2 = if r `elem` rs then fs
+                else insert r c fs l1 l2
                 where rs = map (\(_, r, _) -> r) fs
 
-addcol :: Frontier -> Int -> Int -> Frontier
-addcol fs r c = if c `elem` cs then fs
-                else insert r c fs
+addcol :: Frontier -> Int -> Int -> [Symbols] -> [Symbols] -> Frontier
+addcol fs r c l1 l2 = if c `elem` cs then fs
+                else insert r c fs l1 l2
                 where cs = map (\(_, _, c) -> c) fs
 
-insert :: Int -> Int -> Frontier -> Frontier
-insert r c frontier =
+insert :: Int -> Int -> Frontier -> [Symbols] -> [Symbols] -> Frontier
+insert r c frontier l1 l2 =
   case nth r l1 of
     Nothing -> frontier
     (Just a) -> case nth c l2 of
@@ -66,9 +66,9 @@ nth 0 (x:_) = Just x
 nth n (_:xs) | n > 0 = nth (n-1) xs
 nth _ [] = Nothing
 
-l1 = "a" : map (++"a") l1
-l2 = "b" : map (++"b") l2
-ntS = l1 +++ l2
+ntA = "a" : map (++"a") ntA
+ntB = "b" : map (++"b") ntB
+ntS = ntA +++ ntB
 
 main :: IO ()
 main = mapM_ print (take 100 ntS)
