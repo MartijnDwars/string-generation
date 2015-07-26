@@ -12,8 +12,8 @@ infixl 5 |||
 infixl 6 +++
 
 merge2 :: (a -> a -> Ordering) -> [a] -> [a] -> [a]
-merge2 cmp as [] = as
-merge2 cmp [] bs = bs
+merge2 _ as [] = as
+merge2 _ [] bs = bs
 merge2 cmp (a:as) (b:bs) = case cmp a b of
   GT -> b:(merge2 cmp (a:as) bs)
   _  -> a:(merge2 cmp as (b:bs))
@@ -30,16 +30,16 @@ cmpVal :: Corner -> Corner -> Ordering
 cmpVal (v1, _, _) (v2, _, _) = cmpSymLen v1 v2
 
 (+++) :: [Symbols] -> [Symbols] -> [Symbols]
-a +++ b = prod cmpSymLen a b
+a +++ b = prod a b
 
-prod :: (Symbols -> Symbols -> Ordering) -> [Symbols] -> [Symbols] -> [Symbols]
-prod cmpSym l1 l2 = getfrontier initfrontier l1 l2
+prod :: [Symbols] -> [Symbols] -> [Symbols]
+prod l1 l2 = getfrontier initfrontier l1 l2
   where initfrontier :: Frontier
         initfrontier = [(initval, 0, 0)]
         initval = (head l1) ++ (head l2)
 
 getfrontier :: Frontier -> [Symbols] -> [Symbols] -> [Symbols]
-getfrontier []       l1 l2 = []
+getfrontier []       _  _  = []
 getfrontier frontier l1 l2 = a: getfrontier frontier''' l1 l2
   where ((a,r,c) : frontier') = frontier
         frontier''            = addrow frontier'  (r+1) c     l1 l2
